@@ -1,73 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Guess the Lie</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Game Font -->
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+:root {
+  --bg:#ffffff;
+  --card:#ffffff;
+  --text:#111;
+  --muted:#666;
+  --green:#2ecc71;
+  --red:#e74c3c;
+}
+
+/* Weather themes */
+body.sunny { --bg:#fff9ec; }
+body.rainy { --bg:#f1f5f9; }
+body.night { --bg:#0f172a; --text:#f8fafc; --card:#111827; }
+
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #fff;
-  color: #111;
-  text-align: center;
+  margin:0;
+  font-family:'Rubik',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  text-align:center;
+  transition:background 0.4s;
 }
 
 #app {
-  max-width: 520px;
-  margin: auto;
-  padding: 40px 20px;
+  max-width:700px;
+  margin:auto;
+  padding:60px 30px;
 }
 
 h1 {
-  font-size: 2.4rem;
-  margin-bottom: 30px;
+  font-size:3rem;
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+#progress {
+  color:var(--muted);
+  margin-bottom:20px;
 }
 
 .statement {
-  border: 1px solid #eee;
-  border-radius: 14px;
-  padding: 22px;
-  margin: 14px 0;
-  cursor: pointer;
-  transition: 0.15s;
+  background:var(--card);
+  border:1px solid #eee;
+  border-radius:18px;
+  padding:26px;
+  margin:18px 0;
+  font-size:1.1rem;
+  cursor:pointer;
+  transition:transform 0.15s, box-shadow 0.15s;
 }
 
 .statement:hover {
-  transform: scale(1.02);
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(0,0,0,0.06);
 }
 
-.statement.correct { background:#e9fff1; }
-.statement.wrong { background:#ffecec; }
-.statement.hidden { visibility:hidden; }
+.statement.correct {
+  background:#e9fff1;
+  animation:pulse 0.4s;
+}
+
+.statement.wrong {
+  background:#ffecec;
+}
+
+@keyframes pulse {
+  0%{transform:scale(1)}
+  50%{transform:scale(1.04)}
+  100%{transform:scale(1)}
+}
+
+.statement.hidden { visibility:hidden }
 
 #explanation {
-  margin: 20px 0;
-  font-size: 0.95rem;
-  color: #444;
+  margin:20px 0;
+  font-size:1rem;
+  color:var(--muted);
 }
 
 .hud {
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin: 25px 0;
+  margin:30px 0 10px;
 }
 
-#dots {
-  display:flex;
-  gap:6px;
-}
-
+#dots { display:flex; gap:6px }
 .dot {
   width:10px;
   height:10px;
   border-radius:50%;
   background:#ddd;
 }
-.dot.correct { background:#2ecc71; }
-.dot.wrong { background:#e74c3c; }
+.dot.correct { background:var(--green) }
+.dot.wrong { background:var(--red) }
 
 .controls {
   display:flex;
@@ -76,19 +112,21 @@ h1 {
 }
 
 button {
-  padding:10px 14px;
-  border-radius:10px;
-  border:1px solid #ddd;
+  padding:12px 18px;
+  border-radius:14px;
+  border:1px solid #e5e5e5;
   background:#fff;
+  font-size:0.95rem;
   cursor:pointer;
+  transition:transform 0.12s, box-shadow 0.12s;
 }
-
-button:disabled {
-  opacity:0.4;
-  cursor:default;
+button:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 6px 14px rgba(0,0,0,0.08);
 }
+button:disabled{opacity:0.4}
 
-.hidden { display:none; }
+.hidden{display:none}
 </style>
 </head>
 
@@ -96,15 +134,12 @@ button:disabled {
 <div id="app">
 
 <h1>Guess the Lie</h1>
+<div id="progress"></div>
 
 <div id="game">
-  <div id="progress">1 / 10</div>
-
-  <div id="q">
-    <div class="statement" data-i="0"></div>
-    <div class="statement" data-i="1"></div>
-    <div class="statement" data-i="2"></div>
-  </div>
+  <div class="statement"></div>
+  <div class="statement"></div>
+  <div class="statement"></div>
 
   <div id="explanation" class="hidden"></div>
 
@@ -121,34 +156,16 @@ button:disabled {
 </div>
 
 <div id="end" class="hidden">
-  <h2>Done.</h2>
-  <p id="scoreText"></p>
+  <h2>That was interesting.</h2>
+  <p id="finalScore"></p>
   <button onclick="startGame()">Play again</button>
 </div>
 
 </div>
 
 <script>
-/* ========= QUESTIONS (example only – you add more) ========= */
+/* ---------------- QUESTIONS (ADD MORE HERE) ---------------- */
 const QUESTIONS = [
-  {
-    statements:[
-      "The Sun is a planet.",
-      "The Sun produces its own light.",
-      "The Sun is at the center of our solar system."
-    ],
-    answer:0,
-    why:"The Sun is a star, not a planet."
-  },
-  {
-    statements:[
-      "Humans have four lungs.",
-      "The heart is a muscle.",
-      "The body has 206 bones."
-    ],
-    answer:0,
-    why:"Humans have two lungs."
-  },
   {
     statements:[
       "Penguins can fly.",
@@ -156,161 +173,127 @@ const QUESTIONS = [
       "Penguins are excellent swimmers."
     ],
     answer:0,
-    why:"Penguins are flightless birds."
+    why:"Penguins are flightless birds adapted for swimming."
+  },
+  {
+    statements:[
+      "Google was originally called Backrub.",
+      "The first iPhone had a front camera.",
+      "Wi-Fi stands for Wireless Fidelity."
+    ],
+    answer:1,
+    why:"The first iPhone (2007) had no front-facing camera."
   }
 ];
 
-/* ========= CONFIG ========= */
-const TOTAL = 10;
-const TIME = 10;
+/* ---------------- DAILY SEED ---------------- */
+const seed = new Date().toDateString();
+function seededShuffle(arr){
+  let s = [...arr];
+  let h = [...seed].reduce((a,c)=>a+c.charCodeAt(0),0);
+  return s.sort(()=> (h=Math.sin(h)*10000)%1-0.5);
+}
 
-/* ========= STATE ========= */
-let pool = [];
-let index = 0;
-let answered = 0;
-let score = 0;
-let locked = false;
-let timer = null;
-let timeLeft = TIME;
-let freezeUsed = false;
-let fiftyUsed = false;
+/* ---------------- WEATHER THEME ---------------- */
+(function(){
+  const h = new Date().getHours();
+  if(h>=19||h<6) document.body.classList.add("night");
+  else if(Math.random()>0.5) document.body.classList.add("rainy");
+  else document.body.classList.add("sunny");
+})();
 
-/* ========= ELEMENTS ========= */
-const statements = document.querySelectorAll(".statement");
-const explanation = document.getElementById("explanation");
-const progress = document.getElementById("progress");
-const timerEl = document.getElementById("timer");
+/* ---------------- GAME LOGIC ---------------- */
+const TOTAL = 10, TIME = 10;
+let pool=[], idx=0, answered=0, score=0, locked=false;
+let timer=null, timeLeft=TIME, freezeUsed=false, fiftyUsed=false;
+
+const cards = document.querySelectorAll(".statement");
 const dotsEl = document.getElementById("dots");
-const game = document.getElementById("game");
-const end = document.getElementById("end");
-const scoreText = document.getElementById("scoreText");
+const timerEl = document.getElementById("timer");
+const progressEl = document.getElementById("progress");
+const explainEl = document.getElementById("explanation");
+const gameEl = document.getElementById("game");
+const endEl = document.getElementById("end");
+const finalScore = document.getElementById("finalScore");
 
-/* ========= UTILS ========= */
-const shuffle = a => [...a].sort(()=>Math.random()-0.5);
+const sndClick = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=");
+const sndGood = sndClick.cloneNode();
+const sndBad = sndClick.cloneNode();
 
-/* ========= DOTS ========= */
 function initDots(){
   dotsEl.innerHTML="";
-  for(let i=0;i<TOTAL;i++){
-    dotsEl.innerHTML += `<span class="dot"></span>`;
-  }
+  for(let i=0;i<TOTAL;i++) dotsEl.innerHTML+="<span class='dot'></span>";
 }
 
-function updateDots(correct){
-  const d = dotsEl.children[answered-1];
-  if(d) d.classList.add(correct ? "correct" : "wrong");
-}
-
-/* ========= GAME ========= */
 function startGame(){
-  pool = shuffle(QUESTIONS);
-  index = 0;
-  answered = 0;
-  score = 0;
-  freezeUsed = false;
-  fiftyUsed = false;
-  game.classList.remove("hidden");
-  end.classList.add("hidden");
+  pool = seededShuffle(QUESTIONS);
+  idx=answered=score=0;
+  freezeUsed=fiftyUsed=false;
+  gameEl.classList.remove("hidden");
+  endEl.classList.add("hidden");
   initDots();
-  nextQuestion();
+  next();
 }
 
-function nextQuestion(){
-  if(answered === TOTAL){
-    endGame();
-    return;
-  }
+function next(){
+  if(answered===TOTAL){ end(); return; }
+  if(idx>=pool.length) pool=seededShuffle(pool),idx=0;
 
-  if(index >= pool.length) pool = shuffle(pool), index = 0;
+  locked=false; timeLeft=TIME;
+  explainEl.classList.add("hidden");
+  timerEl.textContent=timeLeft+"s";
+  progressEl.textContent=`${answered+1} / ${TOTAL}`;
 
-  locked = false;
-  explanation.classList.add("hidden");
-  timeLeft = TIME;
-  timerEl.textContent = timeLeft + "s";
-
-  const q = pool[index++];
-
-  statements.forEach((el,i)=>{
-    el.className="statement";
-    el.textContent = q.statements[i];
-    el.onclick = ()=>select(i,q);
+  const q = pool[idx++];
+  cards.forEach((c,i)=>{
+    c.className="statement";
+    c.textContent=q.statements[i];
+    c.onclick=()=>pick(i,q);
   });
 
-  progress.textContent = `${answered+1} / ${TOTAL}`;
-  startTimer();
-}
-
-function select(i,q){
-  if(locked) return;
-  locked = true;
   clearInterval(timer);
-  answered++;
-
-  const correct = i === q.answer;
-  if(correct) score++;
-
-  statements.forEach((el,idx)=>{
-    if(idx === q.answer) el.classList.add("correct");
-    else if(idx === i) el.classList.add("wrong");
-  });
-
-  updateDots(correct);
-  explanation.textContent = q.why;
-  explanation.classList.remove("hidden");
-
-  setTimeout(nextQuestion,1200);
-}
-
-/* ========= TIMER ========= */
-function startTimer(){
-  clearInterval(timer);
-  timer = setInterval(()=>{
-    timeLeft--;
-    timerEl.textContent = timeLeft+"s";
-    if(timeLeft<=0){
-      clearInterval(timer);
-      locked = true;
-      answered++;
-      updateDots(false);
-      nextQuestion();
-    }
+  timer=setInterval(()=>{
+    timeLeft--; timerEl.textContent=timeLeft+"s";
+    if(timeLeft<=0){ clearInterval(timer); answered++; mark(false); next(); }
   },1000);
 }
 
-/* ========= CONTROLS ========= */
-document.getElementById("skip").onclick = ()=>{
+function pick(i,q){
   if(locked) return;
-  locked = true;
-  clearInterval(timer);
+  locked=true; clearInterval(timer);
   answered++;
-  updateDots(false);
-  nextQuestion();
-};
-
-document.getElementById("freeze").onclick = ()=>{
-  if(freezeUsed) return;
-  freezeUsed = true;
-  timeLeft += 5;
-};
-
-document.getElementById("fifty").onclick = ()=>{
-  if(fiftyUsed) return;
-  fiftyUsed = true;
-  const q = pool[index-1];
-  [0,1,2].filter(i=>i!==q.answer)
-    .slice(0,1)
-    .forEach(i=>statements[i].classList.add("hidden"));
-};
-
-/* ========= END ========= */
-function endGame(){
-  clearInterval(timer);
-  game.classList.add("hidden");
-  end.classList.remove("hidden");
-  scoreText.textContent = `Score: ${score} / ${TOTAL}`;
+  const ok=i===q.answer;
+  if(ok) score++;
+  cards.forEach((c,j)=>{
+    if(j===q.answer) c.classList.add("correct");
+    else if(j===i) c.classList.add("wrong");
+  });
+  mark(ok);
+  explainEl.textContent=q.why;
+  explainEl.classList.remove("hidden");
+  setTimeout(next,1200);
 }
 
-/* ========= START ========= */
+function mark(ok){
+  const d=dotsEl.children[answered-1];
+  if(d) d.classList.add(ok?"correct":"wrong");
+}
+
+function end(){
+  gameEl.classList.add("hidden");
+  endEl.classList.remove("hidden");
+  finalScore.textContent=`Score: ${score} / ${TOTAL}`;
+}
+
+/* Controls */
+skip.onclick=()=>{ if(locked) return; locked=true; answered++; mark(false); next(); }
+freeze.onclick=()=>{ if(freezeUsed) return; freezeUsed=true; timeLeft+=5; }
+fifty.onclick=()=>{ if(fiftyUsed) return; fiftyUsed=true;
+  const q=pool[idx-1];
+  [0,1,2].filter(i=>i!==q.answer).slice(0,1)
+    .forEach(i=>cards[i].classList.add("hidden"));
+}
+
 startGame();
 </script>
 </body>
