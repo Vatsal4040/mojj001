@@ -8,20 +8,20 @@ Your task is to spot the lie.
 
 How it works:
 
-10 questions per session
+-10 questions per session
 
-Questions are shuffled every play
+-Questions are shuffled every play
 
-Increasing difficulty
+-Increasing difficulty
 
-Score shown at the end
+-Score shown at the end
 
-“Why this is a lie” explanation after each answer
+-“Why this is a lie” explanation after each answer
 
 Why it’s fun:
 
-Tests logic and intuition
+-Tests logic and intuition
 
-Mix of facts, myths, and surprises
+-Mix of facts, myths, and surprises
 
-No repetition fatigue
+-No repetition fatigue
