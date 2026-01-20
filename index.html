@@ -1393,11 +1393,13 @@ const QUESTIONS = [
 ];;
 
 /* ---------------- DAILY SEED ---------------- */
-const seed = new Date().toDateString();
-function seededShuffle(arr){
-  let s = [...arr];
-  let h = [...seed].reduce((a,c)=>a+c.charCodeAt(0),0);
-  return s.sort(()=> (h=Math.sin(h)*10000)%1-0.5);
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 /* ---------------- WEATHER THEME ---------------- */
@@ -1432,7 +1434,7 @@ function initDots(){
 }
 
 function startGame(){
-  pool = seededShuffle(QUESTIONS);
+  pool = shuffle(QUESTIONS).slice(0, TOTAL);
   idx=answered=score=0;
   freezeUsed=fiftyUsed=false;
   gameEl.classList.remove("hidden");
